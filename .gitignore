@@ -1,1 +1,8 @@
 /DATA
+*csv
+/exercise_wise_ml_pipelines/hopping/data
+/exercise_wise_ml_pipelines/hopping/peak_plots
+/exercise_wise_ml_pipelines/hopping/segment_csvs
+/exercise_wise_ml_pipelines/hopping/segment_plots
+/exercise_wise_ml_pipelines/hopping/features_output
+/exercise_wise_ml_pipelines/hopping/*.tflite

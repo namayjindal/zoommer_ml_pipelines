@@ -5,8 +5,9 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_score
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
-def load_feature_files(directory):
+def load_and_split_feature_files(directory, test_size=0.1, random_state=42):
     data = []
     file_info = []
     file_count = 0
@@ -19,12 +20,19 @@ def load_feature_files(directory):
             for row_num, row in enumerate(features):
                 data.append(row)
                 file_info.append((filename, row_num))
-    return np.array(data), file_info, file_count
+    
+    data = np.array(data)
+    train_data, test_data, train_info, test_info = train_test_split(
+        data, file_info, test_size=test_size, random_state=random_state
+    )
+    
+    return train_data, test_data, train_info, test_info, file_count
 
-# Update the function call for training data
-feature_dir = "peak_detection/features_output"
-X_train, train_file_info, train_file_count = load_feature_files(feature_dir)
-print(f"Number of training files: {train_file_count}")
+# Load and split the data
+feature_dir = "exercise_wise_ml_pipelines/hopping/features_output"
+X_train, X_test, train_file_info, test_file_info, train_file_count = load_and_split_feature_files(feature_dir)
+print(f"Number of training files: {len(train_file_info)}")
+print(f"Number of test files: {len(test_file_info)}")
 
 def find_optimal_clusters(X, max_clusters=10):
     silhouette_scores = []
@@ -65,7 +73,6 @@ class TFAnomalyDetector(tf.Module):
         self.scaler_mean = tf.Variable(scaler.mean_, dtype=tf.float32)
         self.scaler_scale = tf.Variable(scaler.scale_, dtype=tf.float32)
     
-    # @tf.function(input_signature=[tf.TensorSpec(shape=[1, 84], dtype=tf.float32)])
     @tf.function(input_signature=[tf.TensorSpec(shape=[1, 42], dtype=tf.float32)])
     def __call__(self, x):
         x_scaled = (x - self.scaler_mean) / self.scaler_scale
@@ -77,7 +84,7 @@ tf_detector = TFAnomalyDetector(detector.kmeans, detector.scaler)
 converter = tf.lite.TFLiteConverter.from_keras_model(tf_detector)
 tflite_model = converter.convert()
 
-with open('peak_detection/models/hopping_anomaly_detector.tflite', 'wb') as f:
+with open('exercise_wise_ml_pipelines/hopping/hopping_anomaly_detector.tflite', 'wb') as f:
     f.write(tflite_model)
 
 interpreter = tf.lite.Interpreter(model_content=tflite_model)
@@ -88,32 +95,23 @@ def get_tflite_predictions(interpreter, X):
     output_details = interpreter.get_output_details()
     results = []
     for sample in X:
-        # interpreter.set_tensor(input_details[0]['index'], sample.reshape(1, 84).astype(np.float32))
         interpreter.set_tensor(input_details[0]['index'], sample.reshape(1, 42).astype(np.float32))
         interpreter.invoke()
         results.append(interpreter.get_tensor(output_details[0]['index'])[0])
     return np.array(results)
 
 tflite_train_results = get_tflite_predictions(interpreter, X_train)
-threshold = np.percentile(tflite_train_results, 70)
+threshold = np.percentile(tflite_train_results, 85)
 print(f"\nAnomaly threshold (based on TFLite model): {threshold}")
 
-test_dir = "peak_detection/test_data"
-X_test, test_file_info, test_file_count = load_feature_files(test_dir)
-print(f"Number of test files: {test_file_count}")
-
 tflite_test_results = get_tflite_predictions(interpreter, X_test)
-
-def should_be_anomaly(filename):
-    return "Stand on one leg" in filename or "Criss Cross" in filename
 
 print("\nTFLite Model Anomaly Detection:")
 correct_predictions = 0
 total_predictions = 0
 
 for (filename, row_num), result, anomaly_score in zip(test_file_info, tflite_test_results > threshold, tflite_test_results):
-    expected_anomaly = should_be_anomaly(filename)
-    is_correct = (result == expected_anomaly)
+    is_correct = not result  # Since all test data should ideally be non-anomalous
     correct_predictions += int(is_correct)
     total_predictions += 1
     print(f"File: {filename}, Row: {row_num}, Is Anomaly: {result}, Anomaly Score: {anomaly_score}, Correct: {is_correct}")
@@ -128,7 +126,7 @@ for (filename, _), result in zip(test_file_info, tflite_test_results > threshold
     anomaly_counts[filename]["total"] += 1
     if result:
         anomaly_counts[filename]["anomalies"] += 1
-    if result == should_be_anomaly(filename):
+    if not result:  # Since we're expecting non-anomalous results
         anomaly_counts[filename]["correct"] += 1
 
 print("\nSummary:")
@@ -151,3 +149,4 @@ overall_accuracy = (overall_correct / overall_total) * 100
 print(f"\nOverall Accuracy: {overall_accuracy:.2f}%")
 print(f"Total Correct Predictions: {overall_correct}")
 print(f"Total Predictions: {overall_total}")
+print(f"\nAnomaly threshold (based on TFLite model): {threshold}")

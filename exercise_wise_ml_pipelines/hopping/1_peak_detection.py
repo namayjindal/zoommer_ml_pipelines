@@ -32,8 +32,23 @@ def detect_peaks(data, window_size=20, sensitivity_factor=0.4, min_distance=5):
     
     return peak_indices
 
-def plot_and_save_segments(data, peaks, output_dir, csv_output_dir, filename):
-    base_name = os.path.splitext(os.path.basename(filename))[0]
+def extract_info_from_filename(filename):
+    # Assuming the format is: "Hop forward on one leg (nondominant)-Grade 2-shanvi -12-Good-20240822114012264992.csv"
+    base_name = os.path.splitext(filename)[0]
+    parts = base_name.split('-')
+    
+    grade = parts[1].strip()  # Extract the grade
+    student_name = parts[2].strip()  # Extract and trim whitespace from student name
+    rep_count = parts[3].strip()  # Extract the rep count
+    
+    return grade, student_name, rep_count
+
+def plot_and_save_segments(data, peaks, segment_plot_dir, segment_csv_dir, filename):
+    # Extract information from filename
+    grade, student_name, rep_count = extract_info_from_filename(filename)
+
+    # Simplified file naming convention
+    segment_base_name = f"{student_name}_{grade}_rep{rep_count}"
     
     # Select relevant columns (skip timestamp, index, and battery percentage)
     columns_to_extract = [
@@ -41,12 +56,11 @@ def plot_and_save_segments(data, peaks, output_dir, csv_output_dir, filename):
         'left_leg_accel_x', 'left_leg_accel_y', 'left_leg_accel_z',
     ]
 
-    # columns_to_extract = [
-    #     'right_leg_accel_x', 'right_leg_accel_y', 'right_leg_accel_z',
-    #     'right_leg_gyro_x', 'right_leg_gyro_y', 'right_leg_gyro_z',
-    #     'left_leg_accel_x', 'left_leg_accel_y', 'left_leg_accel_z',
-    #     'left_leg_gyro_x', 'left_leg_gyro_y', 'left_leg_gyro_z'
-    # ]
+    # Check if the required columns exist in the data
+    if not all(col in data.columns for col in columns_to_extract):
+        print(f"Required columns missing in {filename}. Deleting the file.")
+        os.remove(filename)
+        return
 
     data = data[columns_to_extract]
 
@@ -58,45 +72,49 @@ def plot_and_save_segments(data, peaks, output_dir, csv_output_dir, filename):
         # Plot the segment
         plt.figure(figsize=(8, 4))
         plt.plot(segment)
-        plt.title(f"Segment between peaks {start} and {end} from {base_name}")
-        segment_filename = f"{base_name}_segment_{start}_{end}.png"
-        plt.savefig(os.path.join(output_dir, segment_filename))
+        plt.title(f"Segment {i+1} from {segment_base_name}")
+        segment_plot_filename = f"{segment_base_name}_segment_{i+1}.png"
+        plt.savefig(os.path.join(segment_plot_dir, segment_plot_filename))
         plt.close()
         
         # Save the raw data of the segment
-        segment_csv_filename = f"{base_name}_segment_{start}_{end}.csv"
-        segment.to_csv(os.path.join(csv_output_dir, segment_csv_filename), index=False)
+        segment_csv_filename = f"{segment_base_name}_segment_{i+1}.csv"
+        segment.to_csv(os.path.join(segment_csv_dir, segment_csv_filename), index=False)
 
-def process_all_files(input_dir, output_dir, csv_output_dir):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    if not os.path.exists(csv_output_dir):
-        os.makedirs(csv_output_dir)
+def process_all_files(input_dir, segment_plot_dir, segment_csv_dir, peak_plot_dir):
+    if not os.path.exists(segment_plot_dir):
+        os.makedirs(segment_plot_dir)
+    if not os.path.exists(segment_csv_dir):
+        os.makedirs(segment_csv_dir)
+    if not os.path.exists(peak_plot_dir):
+        os.makedirs(peak_plot_dir)
 
     for filename in os.listdir(input_dir):
         if filename.endswith(".csv"):
             filepath = os.path.join(input_dir, filename)
             df = pd.read_csv(filepath)
 
-            # Extract the right leg accel z data for peak detection
+            # Extract the right leg accel x data for peak detection
             x_accel_data = df['right_leg_accel_x'].values
 
             peaks = detect_peaks(x_accel_data)
-            plot_and_save_segments(df, peaks, output_dir, csv_output_dir, filename)
+            plot_and_save_segments(df, peaks, segment_plot_dir, segment_csv_dir, filepath)
 
-            # Plot the overall results
+            # Plot the overall results for peaks
+            grade, student_name, rep_count = extract_info_from_filename(filename)
             plt.figure(figsize=(12, 6))
             plt.plot(x_accel_data)
             plt.plot(peaks, x_accel_data[peaks], "x")
-            plt.title(f"Peak Detection Results for {filename}")
-            results_filename = f"{os.path.splitext(filename)[0]}_results.png"
-            plt.savefig(os.path.join(output_dir, results_filename))
+            plt.title(f"Peak Detection for {student_name} - {grade} - Rep {rep_count}")
+            peak_plot_filename = f"{student_name}_{grade}_rep{rep_count}_peaks.png"
+            plt.savefig(os.path.join(peak_plot_dir, peak_plot_filename))
             plt.close()
 
 # Directories
 input_directory = "exercise_wise_ml_pipelines/hopping/data"
-output_directory = "exercise_wise_ml_pipelines/hopping/extracted_segments"
-csv_output_directory = "exercise_wise_ml_pipelines/hopping/extracted_segments_csv"
+segment_plot_directory = "exercise_wise_ml_pipelines/hopping/segment_plots"
+segment_csv_directory = "exercise_wise_ml_pipelines/hopping/segment_csvs"
+peak_plot_directory = "exercise_wise_ml_pipelines/hopping/peak_plots"
 
 # Process all files in the directory
-process_all_files(input_directory, output_directory, csv_output_directory)
+process_all_files(input_directory, segment_plot_directory, segment_csv_directory, peak_plot_directory)

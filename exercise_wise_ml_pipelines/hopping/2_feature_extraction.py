@@ -41,7 +41,7 @@ def process_csv_file(filename, window_size):
     all_features_df = pd.concat(all_features, axis=1)
     return all_features_df
 
-def extract_features_from_segments(directory, window_size=4, output_dir='peak_detection/features_output'):
+def extract_features_from_segments(directory, window_size=4, output_dir='exercise_wise_ml_pipelines/hopping/features_output'):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
@@ -56,7 +56,7 @@ def extract_features_from_segments(directory, window_size=4, output_dir='peak_de
             print(f"Extracted features saved to {output_filename}")
 
 # Directory containing the extracted segments
-segments_directory = 'peak_detection/extracted_segments_csv'
+segments_directory = 'exercise_wise_ml_pipelines/hopping/segment_csvs'
 
 # Extract features from all files in the directory
 extract_features_from_segments(segments_directory)
