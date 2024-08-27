@@ -31,3 +31,9 @@
 /exercise_wise_ml_pipelines/dribbling/segment_plots
 /exercise_wise_ml_pipelines/dribbling/features_output
 /exercise_wise_ml_pipelines/dribbling/*.tflite
+/exercise_wise_ml_pipelines/skipping/data
+/exercise_wise_ml_pipelines/skipping/peak_plots
+/exercise_wise_ml_pipelines/skipping/segment_csvs
+/exercise_wise_ml_pipelines/skipping/segment_plots
+/exercise_wise_ml_pipelines/skipping/features_output
+/exercise_wise_ml_pipelines/skipping/*.tflite
