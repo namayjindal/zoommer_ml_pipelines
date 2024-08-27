@@ -94,8 +94,23 @@ def process_all_files(input_dir, segment_plot_dir, segment_csv_dir, peak_plot_di
             filepath = os.path.join(input_dir, filename)
             df = pd.read_csv(filepath)
 
+            print(f"Processing file: {filename}")
+
             # Extract the right leg accel x data for peak detection
             x_accel_data = df['right_leg_accel_x'].values
+            y_accel_data = df['right_leg_accel_y'].values
+            z_accel_data = df['right_leg_accel_z'].values
+
+            columns_to_extract = [
+                'right_leg_accel_x', 'right_leg_accel_y', 'right_leg_accel_z',
+            ]
+
+            data = df[columns_to_extract]
+
+            if not all(col in data.columns for col in columns_to_extract):
+                print(f"Required columns missing in {filename}. Deleting the file.")
+                os.remove(filename)
+                continue
 
             peaks = detect_peaks(x_accel_data)
             plot_and_save_segments(df, peaks, segment_plot_dir, segment_csv_dir, filepath)
@@ -104,6 +119,8 @@ def process_all_files(input_dir, segment_plot_dir, segment_csv_dir, peak_plot_di
             grade, student_name, rep_count = extract_info_from_filename(filename)
             plt.figure(figsize=(12, 6))
             plt.plot(x_accel_data)
+            plt.plot(y_accel_data)
+            plt.plot(z_accel_data)
             plt.plot(peaks, x_accel_data[peaks], "x")
             plt.title(f"Peak Detection for {student_name} - {grade} - Rep {rep_count}")
             peak_plot_filename = f"{student_name}_{grade}_rep{rep_count}_peaks.png"

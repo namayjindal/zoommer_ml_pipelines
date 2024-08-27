@@ -119,6 +119,8 @@ def process_all_files(input_dir, segment_plot_dir, segment_csv_dir, peak_plot_di
             grade, student_name, rep_count = extract_info_from_filename(filename)
             plt.figure(figsize=(12, 6))
             plt.plot(x_accel_data)
+            plt.plot(y_accel_data)
+            plt.plot(z_accel_data)
             plt.plot(peaks, x_accel_data[peaks], "x")
             plt.title(f"Peak Detection for {student_name} - {grade} - Rep {rep_count}")
             peak_plot_filename = f"{student_name}_{grade}_rep{rep_count}_peaks.png"
