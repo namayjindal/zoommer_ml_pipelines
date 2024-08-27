@@ -6,3 +6,9 @@
 /exercise_wise_ml_pipelines/hopping/segment_plots
 /exercise_wise_ml_pipelines/hopping/features_output
 /exercise_wise_ml_pipelines/hopping/*.tflite
+/exercise_wise_ml_pipelines/criss_cross_with_clap/data
+/exercise_wise_ml_pipelines/criss_cross_with_clap/peak_plots
+/exercise_wise_ml_pipelines/criss_cross_with_clap/segment_csvs
+/exercise_wise_ml_pipelines/criss_cross_with_clap/segment_plots
+/exercise_wise_ml_pipelines/criss_cross_with_clap/features_output
+/exercise_wise_ml_pipelines/criss_cross_with_clap/*.tflite
