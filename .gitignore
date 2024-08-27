@@ -19,3 +19,9 @@
 /exercise_wise_ml_pipelines/criss_cross_without_clap/segment_plots
 /exercise_wise_ml_pipelines/criss_cross_without_clap/features_output
 /exercise_wise_ml_pipelines/criss_cross_without_clap/*.tflite
+/exercise_wise_ml_pipelines/ball_bounce_and_catch/data
+/exercise_wise_ml_pipelines/ball_bounce_and_catch/peak_plots
+/exercise_wise_ml_pipelines/ball_bounce_and_catch/segment_csvs
+/exercise_wise_ml_pipelines/ball_bounce_and_catch/segment_plots
+/exercise_wise_ml_pipelines/ball_bounce_and_catch/features_output
+/exercise_wise_ml_pipelines/ball_bounce_and_catch/*.tflite
