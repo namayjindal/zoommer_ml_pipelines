@@ -43,9 +43,8 @@ def load_and_split_feature_files(directory, test_size=0.1, random_state=42):
     
     return train_data, test_data, train_info, test_info, file_count
 
-
 # Load and split the data
-feature_dir = "exercise_wise_ml_pipelines/hopping/features_output"
+feature_dir = "exercise_wise_ml_pipelines/dribbling/features_output"
 X_train, X_test, train_file_info, test_file_info, train_file_count = load_and_split_feature_files(feature_dir)
 print(f"Number of training files: {len(train_file_info)}")
 print(f"Number of test files: {len(test_file_info)}")
@@ -100,7 +99,7 @@ tf_detector = TFAnomalyDetector(detector.kmeans, detector.scaler)
 converter = tf.lite.TFLiteConverter.from_keras_model(tf_detector)
 tflite_model = converter.convert()
 
-with open('exercise_wise_ml_pipelines/hopping/hopping_anomaly_detector.tflite', 'wb') as f:
+with open('exercise_wise_ml_pipelines/dribbling/dribbling_anomaly_detector.tflite', 'wb') as f:
     f.write(tflite_model)
 
 interpreter = tf.lite.Interpreter(model_content=tflite_model)

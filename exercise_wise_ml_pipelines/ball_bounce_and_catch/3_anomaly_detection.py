@@ -13,13 +13,28 @@ def load_and_split_feature_files(directory, test_size=0.1, random_state=42):
     file_count = 0
     for filename in os.listdir(directory):
         if filename.endswith(".csv"):
-            file_count += 1
             filepath = os.path.join(directory, filename)
-            df = pd.read_csv(filepath)
-            features = df.values
-            for row_num, row in enumerate(features):
-                data.append(row)
-                file_info.append((filename, row_num))
+            
+            # Check if the file is empty by size
+            if os.path.getsize(filepath) == 0:
+                os.remove(filepath)  # Delete the file if it's empty
+                print(f"Deleted empty file: {filename}")
+                continue  # Skip processing this file
+
+            try:
+                df = pd.read_csv(filepath)
+                if df.empty:
+                    raise pd.errors.EmptyDataError(f"No data in file: {filename}")
+
+                file_count += 1
+                features = df.values
+                for row_num, row in enumerate(features):
+                    data.append(row)
+                    file_info.append((filename, row_num))
+
+            except pd.errors.EmptyDataError:
+                print(f"Skipping empty or invalid file: {filename}")
+                continue  # Skip processing this file
     
     data = np.array(data)
     train_data, test_data, train_info, test_info = train_test_split(
@@ -27,6 +42,7 @@ def load_and_split_feature_files(directory, test_size=0.1, random_state=42):
     )
     
     return train_data, test_data, train_info, test_info, file_count
+
 
 # Load and split the data
 feature_dir = "exercise_wise_ml_pipelines/ball_bounce_and_catch/features_output"

@@ -25,3 +25,9 @@
 /exercise_wise_ml_pipelines/ball_bounce_and_catch/segment_plots
 /exercise_wise_ml_pipelines/ball_bounce_and_catch/features_output
 /exercise_wise_ml_pipelines/ball_bounce_and_catch/*.tflite
+/exercise_wise_ml_pipelines/dribbling/data
+/exercise_wise_ml_pipelines/dribbling/peak_plots
+/exercise_wise_ml_pipelines/dribbling/segment_csvs
+/exercise_wise_ml_pipelines/dribbling/segment_plots
+/exercise_wise_ml_pipelines/dribbling/features_output
+/exercise_wise_ml_pipelines/dribbling/*.tflite
